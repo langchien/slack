@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slack Feature Bible & Benchmark Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #1A1D21;
+      --bg-surface: #222529;
+      --bg-surface-hover: #2C3136;
+      --bg-surface-active: #343A40;
+      --border-subtle: #363B41;
+      --border-strong: #495057;
+      
+      --slack-aubergine: #4A154B;
+      --slack-aubergine-light: #611f69;
+      --slack-sidebar: #19171D;
+      --slack-blue: #1264A3;
+      --slack-blue-soft: rgba(18, 100, 163, 0.18);
+      --slack-green: #007A5A;
+      --slack-green-soft: rgba(0, 122, 90, 0.2);
+      --slack-red: #E01E5A;
+      --slack-red-soft: rgba(224, 30, 90, 0.18);
+      --slack-yellow: #ECB22E;
+      --slack-yellow-soft: rgba(236, 178, 46, 0.18);
+      --slack-purple: #7C3AED;
+      --slack-purple-soft: rgba(124, 58, 237, 0.18);
+
+      --text-main: #F8F9FA;
+      --text-muted: #ABABAD;
+      --text-dim: #71767B;
+
+      --tier1-color: #ECB22E;
+      --tier2-color: #1264A3;
+      --tier3-color: #007A5A;
+      --tier4-color: #D946EF;
+      --tier5-color: #8B5CF6;
+
+      --p0-color: #E01E5A;
+      --p1-color: #ECB22E;
+      --p2-color: #1264A3;
+      --p3-color: #71767B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation */
+    header {
+      background: rgba(26, 29, 33, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 24px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #4A154B 0%, #1264A3 50%, #007A5A 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(74, 21, 75, 0.4);
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand .badge-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      background: var(--slack-aubergine);
+      color: #FFF;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Stats & Progress */
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg-surface);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-weight: 700;
+      color: #FFF;
+    }
+
+    .progress-bar-wrap {
+      width: 100px;
+      height: 8px;
+      background: var(--bg-base);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #007A5A, #2BAC76);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-strong);
+      color: #FFF;
+    }
+
+    .btn-primary {
+      background: var(--slack-green);
+      border-color: var(--slack-green);
+      color: #FFF;
+    }
+
+    .btn-primary:hover {
+      background: #008f6a;
+    }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 9px 12px 9px 36px;
+      color: #FFF;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--slack-blue);
+      box-shadow: 0 0 0 1px var(--slack-blue);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .shortcut-hint {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--bg-surface-hover);
+      color: var(--text-dim);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .pill-btn:hover {
+      background: var(--bg-surface);
+      color: #FFF;
+      border-color: var(--border-strong);
+    }
+
+    .pill-btn.active {
+      background: var(--slack-blue-soft);
+      border-color: var(--slack-blue);
+      color: #38BDF8;
+      font-weight: 600;
+    }
+
+    .pill-btn.active.tier4 {
+      background: var(--slack-purple-soft);
+      border-color: var(--tier4-color);
+      color: #F472B6;
+    }
+
+    .pill-btn.active.p0 {
+      background: var(--slack-red-soft);
+      border-color: var(--p0-color);
+      color: #FB7185;
+    }
+
+    /* Layout Body */
+    .layout-body {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+
+    /* Left Sidebar: Modules */
+    .modules-sidebar {
+      width: 280px;
+      background: var(--slack-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      padding: 16px 12px;
+      overflow-y: auto;
+      max-height: calc(100vh - 120px);
+      position: sticky;
+      top: 115px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      padding: 4px 8px 8px;
+    }
+
+    .module-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      margin-bottom: 2px;
+      text-decoration: none;
+    }
+
+    .module-nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #FFF;
+    }
+
+    .module-nav-item.active {
+      background: var(--slack-aubergine-light);
+      color: #FFF;
+      font-weight: 600;
+    }
+
+    .module-nav-item .mod-count {
+      font-size: 11px;
+      padding: 1px 6px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 999px;
+      color: var(--text-dim);
+    }
+
+    .module-nav-item.active .mod-count {
+      background: rgba(255, 255, 255, 0.2);
+      color: #FFF;
+    }
+
+    /* Main Content */
+    .main-view {
+      flex: 1;
+      padding: 24px 32px;
+      max-width: 1400px;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .results-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .results-count {
+      font-weight: 700;
+      color: #FFF;
+    }
+
+    .view-toggles {
+      display: flex;
+      align-items: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 2px;
+    }
+
+    .view-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--bg-surface-hover);
+      color: #FFF;
+      font-weight: 600;
+    }
+
+    /* Cards Grid View */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .feature-card.is-checked {
+      background: rgba(0, 122, 90, 0.08);
+      border-color: rgba(0, 122, 90, 0.35);
+    }
+
+    .feature-card.is-tier4 {
+      border-left: 3px solid var(--tier4-color);
+    }
+
+    .feature-card.is-p0 {
+      border-left: 3px solid var(--p0-color);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .feature-checkbox {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-strong);
+      border-radius: 5px;
+      background: var(--bg-base);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: all 0.15s;
+    }
+
+    .feature-checkbox:checked {
+      background: var(--slack-green);
+      border-color: var(--slack-green);
+    }
+
+    .feature-checkbox:checked::after {
+      content: '✓';
+      color: #FFF;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .card-title-wrap {
+      flex: 1;
+    }
+
+    .feature-stt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+
+    .feature-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #FFF;
+      line-height: 1.35;
+    }
+
+    .card-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-module {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-muted);
+    }
+
+    .badge-tier1 { background: rgba(236, 178, 46, 0.15); color: #FCD34D; border: 1px solid rgba(236, 178, 46, 0.3); }
+    .badge-tier2 { background: rgba(18, 100, 163, 0.2); color: #60A5FA; border: 1px solid rgba(18, 100, 163, 0.4); }
+    .badge-tier3 { background: rgba(0, 122, 90, 0.2); color: #34D399; border: 1px solid rgba(0, 122, 90, 0.4); }
+    .badge-tier4 { background: rgba(217, 70, 239, 0.18); color: #F472B6; border: 1px solid rgba(217, 70, 239, 0.4); }
+    .badge-tier5 { background: rgba(139, 92, 246, 0.18); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.4); }
+
+    .badge-p0 { background: rgba(224, 30, 90, 0.2); color: #FB7185; font-weight: 700; }
+    .badge-p1 { background: rgba(236, 178, 46, 0.15); color: #FCD34D; }
+    .badge-p2 { background: rgba(18, 100, 163, 0.15); color: #93C5FD; }
+    .badge-p3 { background: rgba(113, 118, 123, 0.2); color: #9CA3AF; }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      flex: 1;
+    }
+
+    .feature-desc code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: #38BDF8;
+    }
+
+    /* Table View */
+    .table-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-dim);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: top;
+      color: var(--text-muted);
+    }
+
+    tr:hover td {
+      background: var(--bg-surface-hover);
+      color: #FFF;
+    }
+
+    tr.is-checked td {
+      background: rgba(0, 122, 90, 0.06);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+
+    .empty-state-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface-active);
+      border: 1px solid var(--border-strong);
+      color: #FFF;
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Responsiveness */
+    @media (max-width: 900px) {
+      .modules-sidebar {
+        display: none;
+      }
+      .main-view {
+        padding: 16px;
+      }
+      .header-stats {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-logo">S</div>
+        <div>
+          <h1>Slack Feature Bible <span class="badge-tag">Explorer & Benchmark</span></h1>
+        </div>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-item">
+          <span class="stat-label">Đã đối chiếu:</span>
+          <span class="stat-value" id="statChecked">0 / 78</span>
+        </div>
+        <div class="progress-bar-wrap" title="Tiến độ đối chiếu">
+          <div class="progress-bar-fill" id="statProgress"></div>
+        </div>
+        <div class="stat-value" id="statPercent">0%</div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="btnToggleAll" title="Đánh dấu đã xong các mục đang lọc">
+          <span id="btnToggleAllIcon">☑</span> Đánh dấu tất cả
+        </button>
+        <button class="btn" id="btnResetAll" title="Xóa toàn bộ đánh dấu">
+          ↺ Reset
+        </button>
+        <button class="btn btn-primary" id="btnExport" title="Xuất báo cáo tiến độ dưới dạng JSON/Markdown">
+          ⤓ Xuất báo cáo
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Tìm theo tên tính năng, phím tắt, tiểu tiết (nhấn /)...">
+        <span class="shortcut-hint">/</span>
+      </div>
+
+      <!-- Tier Filters -->
+      <div class="filter-group">
+        <button class="pill-btn active" data-filter="tier" data-val="ALL">Tất cả Tier</button>
+        <button class="pill-btn" data-filter="tier" data-val="Tier 1">Tier 1: Core</button>
+        <button class="pill-btn" data-filter="tier" data-val="Tier 2">Tier 2: Major</button>
+        <button class="pill-btn" data-filter="tier" data-val="Tier 3">Tier 3: Productivity</button>
+        <button class="pill-btn tier4" data-filter="tier" data-val="Tier 4">Tier 4: Slack Magic ✨</button>
+        <button class="pill-btn" data-filter="tier" data-val="Tier 5">Tier 5: Enterprise</button>
+      </div>
+
+      <!-- Priority Filters -->
+      <div class="filter-group">
+        <button class="pill-btn active" data-filter="priority" data-val="ALL">Tất cả P</button>
+        <button class="pill-btn p0" data-filter="priority" data-val="P0">P0: Critical</button>
+        <button class="pill-btn" data-filter="priority" data-val="P1">P1: High</button>
+        <button class="pill-btn" data-filter="priority" data-val="P2">P2: Medium</button>
+        <button class="pill-btn" data-filter="priority" data-val="P3">P3: Low</button>
+      </div>
+
+      <!-- Status Filters -->
+      <div class="filter-group">
+        <button class="pill-btn active" data-filter="status" data-val="ALL">Tất cả trạng thái</button>
+        <button class="pill-btn" data-filter="status" data-val="CHECKED">Đã đối chiếu ✓</button>
+        <button class="pill-btn" data-filter="status" data-val="UNCHECKED">Chưa đối chiếu ⏳</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Body -->
+  <div class="layout-body">
+    <!-- Sidebar Navigation: Modules -->
+    <aside class="modules-sidebar">
+      <div class="sidebar-section-title">13 Phân Hệ Tính Năng</div>
+      <div id="moduleNavList">
+        <!-- Rendered by JS -->
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-view">
+      <div class="results-header">
+        <div class="results-title">
+          <span>Danh sách tính năng</span>
+          <span class="badge badge-module"><span id="resultsCount">78</span> tính năng hiển thị</span>
+        </div>
+
+        <div class="view-toggles">
+          <button class="view-toggle-btn active" id="btnViewCards">☵ Thẻ (Cards)</button>
+          <button class="view-toggle-btn" id="btnViewTable">☰ Bảng (Table)</button>
+        </div>
+      </div>
+
+      <!-- Cards Grid View -->
+      <div class="feature-grid" id="featureGrid">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Table View -->
+      <div class="table-container" id="featureTable" style="display: none;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">Xong</th>
+              <th style="width: 70px;">STT</th>
+              <th style="width: 220px;">Tên tính năng</th>
+              <th style="width: 150px;">Phân hệ</th>
+              <th style="width: 120px;">Tier</th>
+              <th style="width: 90px;">Mức độ</th>
+              <th>Mô tả chi tiết hành vi</th>
+            </tr>
+          </thead>
+          <tbody id="featureTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon">🔍</div>
+        <h3>Không tìm thấy tính năng nào</h3>
+        <p>Thử đổi từ khóa tìm kiếm hoặc chọn lại các bộ lọc Tier / Priority.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toastMessage">Thông báo đã lưu!</div>
+
+  <!-- Embedded Data & Interactive Logic -->
+  <script>
+    // Database extracted from docs/slack.md
+    const SLACK_FEATURES = [
+      // Phân hệ I
+      { stt: "1.1", module: "Workspace & Danh tính", name: "Multi-Workspace Switcher", desc: "Thanh dọc bên cùng tay trái chuyển đổi nhanh giữa các workspace; hiển thị icon, badge số thông báo chưa đọc, phím tắt Ctrl+[1-9].", tier: "Tier 1", priority: "P0" },
+      { stt: "1.2", module: "Workspace & Danh tính", name: "Workspace Profile & Roles", desc: "Hệ thống vai trò: Primary Owner, Owner, Admin, Full Member, Multi-channel Guest, Single-channel Guest.", tier: "Tier 1", priority: "P0" },
+      { stt: "1.3", module: "Workspace & Danh tính", name: "Profile Fields Tùy Biến", desc: "Hiển thị: Avatar, Full name, Display name, Title/Chức danh, Pronouns, Múi giờ địa phương, Số điện thoại, Tên âm thanh cách đọc tên.", tier: "Tier 2", priority: "P1" },
+      { stt: "1.4", module: "Workspace & Danh tính", name: "Múi giờ & Đồng hồ cục bộ", desc: "Hiển thị giờ hiện tại của thành viên theo múi giờ họ đặt khi xem profile hoặc hover vào avatar (tránh làm phiền người khác ngoài giờ).", tier: "Tier 3", priority: "P2" },
+      { stt: "1.5", module: "Workspace & Danh tính", name: "Workspace Join Flow", desc: "Mời qua email, tạo invite link có thời hạn/giới hạn lượt, hoặc tự động join theo đuôi domain email công ty (Google Workspace / Microsoft 365).", tier: "Tier 2", priority: "P1" },
+      { stt: "1.6", module: "Workspace & Danh tính", name: "Slack Connect (Cross-org)", desc: "Kênh chia sẻ giữa 2 hoặc nhiều công ty/workspace khác nhau mà không cần tạo tài khoản ở workspace đối tác.", tier: "Tier 5", priority: "P3" },
+
+      // Phân hệ II
+      { stt: "2.1", module: "Kênh & Hội thoại", name: "Public Channel (#)", desc: "Kênh công khai, bất kỳ ai trong workspace đều có thể tìm thấy, đọc lịch sử và tham gia.", tier: "Tier 1", priority: "P0" },
+      { stt: "2.2", module: "Kênh & Hội thoại", name: "Private Channel (🔒)", desc: "Kênh riêng tư, chỉ người được mời mới thấy và truy cập. Không thể chuyển từ private về public.", tier: "Tier 1", priority: "P0" },
+      { stt: "2.3", module: "Kênh & Hội thoại", name: "Direct Message (1:1 DM)", desc: "Nhắn tin trực tiếp giữa 2 cá nhân, hiển thị trạng thái online/offline trực tiếp cạnh tên.", tier: "Tier 1", priority: "P0" },
+      { stt: "2.4", module: "Kênh & Hội thoại", name: "Group DM (Tối đa 9 người)", desc: "Nhắn tin nhóm riêng lẻ không đặt tên; có thể convert thành Private Channel bất kỳ lúc nào nếu nhóm phát triển lớn.", tier: "Tier 2", priority: "P1" },
+      { stt: "2.5", module: "Kênh & Hội thoại", name: "Channel Details Header", desc: "Tiêu đề hiển thị: Tên kênh, nút Star, Topic (chủ đề ngắn có thể click sửa), Member avatars & count, Search trong kênh.", tier: "Tier 1", priority: "P0" },
+      { stt: "2.6", module: "Kênh & Hội thoại", name: "Channel Description & Topic", desc: "Phân biệt rõ ràng giữa Topic (chủ đề hiện tại của kênh, hiện ở thanh bar) và Description (mục đích tồn tại của kênh).", tier: "Tier 3", priority: "P1" },
+      { stt: "2.7", module: "Kênh & Hội thoại", name: "Custom Sidebar Sections", desc: "Người dùng tự tạo các nhóm kênh trong thanh sidebar (ví dụ: 'Dự án A', 'Giải trí', 'Quan trọng'), kéo-thả sắp xếp.", tier: "Tier 3", priority: "P2" },
+      { stt: "2.8", module: "Kênh & Hội thoại", name: "Starred Channels / DMs", desc: "Đánh dấu sao các kênh/DM quan trọng để ghim lên đầu sidebar vào section 'Starred'.", tier: "Tier 2", priority: "P1" },
+      { stt: "2.9", module: "Kênh & Hội thoại", name: "Mute Channel", desc: "Tắt chuông và không làm đậm tên kênh khi có tin mới; kênh bị mờ đi và dồn xuống đáy danh sách.", tier: "Tier 3", priority: "P1" },
+      { stt: "2.10", module: "Kênh & Hội thoại", name: "Archive & Delete Channel", desc: "Lưu trữ kênh (read-only, giữ lịch sử tìm kiếm, có thể khôi phục) hoặc xóa hoàn toàn kênh (chỉ admin).", tier: "Tier 2", priority: "P1" },
+      { stt: "2.11", module: "Kênh & Hội thoại", name: "Channel Posting Permissions", desc: "Admin có thể cài đặt kênh chỉ cho phép thông báo (chỉ admin/chủ kênh được đăng bài, thành viên chỉ được reply trong thread).", tier: "Tier 3", priority: "P2" },
+
+      // Phân hệ III
+      { stt: "3.1", module: "Tin nhắn & Soạn thảo", name: "WYSIWYG & Markdown kép", desc: "Hỗ trợ gõ trực tiếp cú pháp markdown (**bold**, _italic_, ~strike~, code, > quote) và thanh toolbar định dạng rich text.", tier: "Tier 1", priority: "P0" },
+      { stt: "3.2", module: "Tin nhắn & Soạn thảo", name: "Multi-line Code Blocks", desc: "Khối code với cú pháp ```code```, tự nhận diện thụt đầu dòng, có nút Copy riêng và giữ nguyên định dạng font monospace.", tier: "Tier 1", priority: "P1" },
+      { stt: "3.3", module: "Tin nhắn & Soạn thảo", name: "Bullet & Numbered Lists", desc: "Tự động thụt lề, hỗ trợ danh sách nhiều cấp (Tab / Shift+Tab để lùi/tiến cấp danh sách).", tier: "Tier 2", priority: "P1" },
+      { stt: "3.4", module: "Tin nhắn & Soạn thảo", name: "Linkify & Custom Link Text", desc: "Tự động biến URL thành hyperlink; hỗ trợ gán text vào link qua phím tắt Ctrl+K trong khung soạn thảo.", tier: "Tier 2", priority: "P1" },
+      { stt: "3.5", module: "Tin nhắn & Soạn thảo", name: "Blockquotes (>)", desc: "Hiển thị trích dẫn với đường viền dọc bên trái và chữ hơi nghiêng.", tier: "Tier 2", priority: "P1" },
+      { stt: "3.6", module: "Tin nhắn & Soạn thảo", name: "Auto-save Drafts", desc: "Tự động lưu bản nháp tin nhắn đang gõ cho từng kênh/DM; mục 'Drafts & Sent' ở thanh sidebar gom lại toàn bộ bản nháp chưa gửi.", tier: "Tier 2", priority: "P1" },
+      { stt: "3.7", module: "Tin nhắn & Soạn thảo", name: "Scheduled Send (Hẹn giờ gửi)", desc: "Nút mũi tên cạnh nút gửi: chọn thời gian gửi tin trong tương lai (9:00 AM sáng mai, hoặc ngày giờ tuỳ chọn).", tier: "Tier 3", priority: "P2" },
+      { stt: "3.8", module: "Tin nhắn & Soạn thảo", name: "Edit & Delete Message", desc: "Chỉnh sửa nội dung tin nhắn (gắn nhãn (edited) kèm timestamp); xóa tin nhắn (soft delete, kèm xác nhận).", tier: "Tier 1", priority: "P0" },
+      { stt: "3.9", module: "Tin nhắn & Soạn thảo", name: "Link Unfurl (Rich Preview)", desc: "Tự động lấy OpenGraph metadata của đường link (ảnh, tiêu đề, mô tả tóm tắt) và hiển thị thẻ preview dưới tin nhắn; có nút x để gỡ preview.", tier: "Tier 2", priority: "P1" },
+      { stt: "3.10", module: "Tin nhắn & Soạn thảo", name: "Collapsible Long Messages", desc: "Tin nhắn quá dài (> 700 ký tự hoặc quá nhiều dòng) tự động co lại với nút 'Show more' / 'Show less'.", tier: "Tier 4", priority: "P2" },
+
+      // Phân hệ IV
+      { stt: "4.1", module: "Phản hồi & Tương tác", name: "Thread (Luồng trả lời)", desc: "Nhấp 'Reply in thread' mở khung thread trượt ra ở cột bên phải. Giữ cho kênh chính không bị trôi tin nhắn.", tier: "Tier 1", priority: "P0" },
+      { stt: "4.2", module: "Phản hồi & Tương tác", name: "Broadcast to Channel (Also send)", desc: "Checkbox khi trả lời thread cho phép bắn tin nhắn đó ra luồng chính của kênh để mọi người cùng thấy.", tier: "Tier 2", priority: "P1" },
+      { stt: "4.3", module: "Phản hồi & Tương tác", name: "Thread Notification & Follow/Unfollow", desc: "Người tham gia thread tự động nhận thông báo; có nút 'Unfollow thread' nếu không muốn nhận ping nữa.", tier: "Tier 2", priority: "P1" },
+      { stt: "4.4", module: "Phản hồi & Tương tác", name: "Centralized 'Threads' View", desc: "Mục 'Threads' trên đỉnh sidebar gom toàn bộ các luồng hội thoại người dùng đang theo dõi có tin mới.", tier: "Tier 1", priority: "P0" },
+      { stt: "4.5", module: "Phản hồi & Tương tác", name: "Emoji Reactions (Reacji)", desc: "Thả cảm xúc emoji vào tin nhắn; hover hiển thị danh sách ai đã thả; click vào icon để cộng dồn hoặc bỏ reaction.", tier: "Tier 1", priority: "P0" },
+      { stt: "4.6", module: "Phản hồi & Tương tác", name: "Hover Action Bar", desc: "Thanh công cụ nổi xuất hiện khi hover lên tin nhắn: 3 emoji hay dùng nhất, nút Add reaction, Reply in thread, Share/Forward, Bookmark, More actions (...).", tier: "Tier 1", priority: "P0" },
+      { stt: "4.7", module: "Phản hồi & Tương tác", name: "Custom Emoji", desc: "Cho phép tải lên emoji riêng của workspace (:party-parrot:, logo công ty,...), tổ chức theo category.", tier: "Tier 3", priority: "P2" },
+      { stt: "4.8", module: "Phản hồi & Tương tác", name: "Emoji Skin Tone Selector", desc: "Cho phép chọn tông màu da mặc định cho các emoji cử chỉ bàn tay/khuôn mặt.", tier: "Tier 4", priority: "P3" },
+      { stt: "4.9", module: "Phản hồi & Tương tác", name: "Mentions Cụ Thể (@username)", desc: "Nhắc tên cá nhân, người được nhắc nhận thông báo nổi bật màu vàng nhạt trên nền tin nhắn.", tier: "Tier 1", priority: "P0" },
+      { stt: "4.10", module: "Phản hồi & Tương tác", name: "Nhắc Nhóm (@channel, @here, @everyone)", desc: "@channel: Báo mọi thành viên trong kênh. @here: Chỉ báo những ai đang online. @everyone: Chỉ dùng ở kênh #general.", tier: "Tier 1", priority: "P1" },
+      { stt: "4.11", module: "Phản hồi & Tương tác", name: "User Group Mentions (@team)", desc: "Tạo nhóm người dùng để nhắc tên cả nhóm cùng lúc (ví dụ: @team-frontend).", tier: "Tier 3", priority: "P2" },
+      { stt: "4.12", module: "Phản hồi & Tương tác", name: "Pin Messages", desc: "Ghim các tin nhắn quan trọng vào kênh; mở danh sách Pinned Messages ở panel bên phải; ai vào kênh cũng xem được.", tier: "Tier 2", priority: "P1" },
+      { stt: "4.13", module: "Phản hồi & Tương tác", name: "Bookmarks & Saved Items", desc: "Đánh dấu 'Save for later' tin nhắn riêng của cá nhân; mở lại qua tab 'Later' trên sidebar.", tier: "Tier 2", priority: "P1" },
+      { stt: "4.14", module: "Phản hồi & Tương tác", name: "Message Forwarding / Share", desc: "Chia sẻ tin nhắn sang một kênh hoặc DM khác kèm trích dẫn nguyên văn và lời bình luận thêm.", tier: "Tier 2", priority: "P1" },
+
+      // Phân hệ V
+      { stt: "5.1", module: "Hiện diện & Trạng thái", name: "Real-time Presence Indicator", desc: "Chấm xanh tròn đặc: Online. Vòng tròn xanh rỗng: Away (sau 10-15 phút không tương tác). Mặt trăng: Do Not Disturb.", tier: "Tier 1", priority: "P0" },
+      { stt: "5.2", module: "Hiện diện & Trạng thái", name: "Manual Presence Setting", desc: "Người dùng có thể tự chuyển trạng thái của mình sang 'Set yourself as away' mà không phụ thuộc vào inactivity timer.", tier: "Tier 3", priority: "P1" },
+      { stt: "5.3", module: "Hiện diện & Trạng thái", name: "Custom Status + Emoji", desc: "Trạng thái hiển thị chữ kèm icon emoji (ví dụ: 🌴 On vacation, 🍔 Out to lunch). Hiện cạnh tên ở mọi nơi.", tier: "Tier 2", priority: "P1" },
+      { stt: "5.4", module: "Hiện diện & Trạng thái", name: "Status Auto-Expiry (Hết hạn)", desc: "Đặt thời gian tự động xóa trạng thái (Sau 30 phút, 1 giờ, Hôm nay, Tuần này, hoặc chọn giờ chính xác).", tier: "Tier 3", priority: "P2" },
+      { stt: "5.5", module: "Hiện diện & Trạng thái", name: "Do Not Disturb (DND) Schedule", desc: "Cài đặt giờ không làm phiền cố định (ví dụ: từ 22h00 đến 08h00 hàng ngày); tắt mọi chuông báo và đẩy vào hàng đợi.", tier: "Tier 2", priority: "P1" },
+      { stt: "5.6", module: "Hiện diện & Trạng thái", name: "Urgent Bypass DND", desc: "Khi gửi tin nhắn cho người đang bật DND, người gửi có tuỳ chọn 'Notify anyway' trong trường hợp cực kỳ khẩn cấp.", tier: "Tier 4", priority: "P2" },
+
+      // Phân hệ VI
+      { stt: "6.1", module: "Thông báo & Huy hiệu", name: "Unread Indicator (In đậm)", desc: "Kênh có tin nhắn chưa đọc sẽ được in đậm chữ trắng trên sidebar; không làm phiền bằng âm thanh nếu không bị mention.", tier: "Tier 1", priority: "P0" },
+      { stt: "6.2", module: "Thông báo & Huy hiệu", name: "Mention Badge (Số đếm đỏ)", desc: "Huy hiệu số màu đỏ trên sidebar và taskbar khi có tin nhắn trực tiếp DM hoặc được @mention.", tier: "Tier 1", priority: "P0" },
+      { stt: "6.3", module: "Thông báo & Huy hiệu", name: "Granular Notification Scope", desc: "Cài đặt nhận thông báo: 'All new messages', 'Mentions & keywords', hoặc 'Nothing'. Áp dụng toàn cục hoặc theo kênh.", tier: "Tier 2", priority: "P1" },
+      { stt: "6.4", module: "Thông báo & Huy hiệu", name: "Custom Keyword Alerts", desc: "Người dùng nhập danh sách từ khóa quan trọng (tên dự án, 'lỗi', 'deploy'); khi ai đó gõ từ này thì nhận thông báo như được mention.", tier: "Tier 3", priority: "P2" },
+      { stt: "6.5", module: "Thông báo & Huy hiệu", name: "Cross-device Smart Notifications", desc: "Khi đang mở Slack trên Desktop, thông báo di động bị hoãn lại 1-2 phút; chỉ gửi push notification tới mobile khi người dùng rời máy.", tier: "Tier 4", priority: "P2" },
+      { stt: "6.6", module: "Thông báo & Huy hiệu", name: "Desktop Audio Alerts", desc: "Âm thanh đặc trưng (Knock Brush, Chime, Wow, Ding, Drop, Ta-da) có thể tùy chọn trong Preferences.", tier: "Tier 3", priority: "P2" },
+      { stt: "6.7", module: "Thông báo & Huy hiệu", name: "Activity Tab / Mentions", desc: "Tab trung tâm tổng hợp tất cả các thông báo nhắc tên bạn, ai đã thả reaction vào tin nhắn của bạn, ai mời vào kênh.", tier: "Tier 1", priority: "P0" },
+
+      // Phân hệ VII
+      { stt: "7.1", module: "Điều hướng & Tìm kiếm", name: "Quick Switcher (Ctrl+K / Cmd+K)", desc: "Cửa sổ tìm kiếm nhanh siêu tốc: gõ tên kênh, người dùng, tài liệu để nhảy ngay đến đó mà không cần dùng chuột.", tier: "Tier 1", priority: "P0" },
+      { stt: "7.2", module: "Điều hướng & Tìm kiếm", name: "Full-Text Message Search", desc: "Tìm kiếm toàn văn trong tất cả các kênh người dùng có quyền đọc, tô sáng từ khóa tìm thấy.", tier: "Tier 1", priority: "P0" },
+      { stt: "7.3", module: "Điều hướng & Tìm kiếm", name: "Search Filter Modifiers", desc: "Hỗ trợ cú pháp tìm kiếm chuyên sâu: from:@user, in:#channel, has:link, has:star, before:date, after:date.", tier: "Tier 2", priority: "P1" },
+      { stt: "7.4", module: "Điều hướng & Tìm kiếm", name: "Tab Phân Loại Kết Quả Tìm Kiếm", desc: "Tách kết quả thành các tab: Messages, Files, Channels, People để dễ lọc.", tier: "Tier 2", priority: "P1" },
+      { stt: "7.5", module: "Điều hướng & Tìm kiếm", name: "Lịch sử Điều hướng (Back/Forward)", desc: "Nút mũi tên Quay lại (Ctrl+[) và Tiến tới (Ctrl+]) giống trình duyệt web, giúp quay lại kênh/vị trí vừa đọc.", tier: "Tier 4", priority: "P1" },
+
+      // Phân hệ VIII
+      { stt: "8.1", module: "Tệp tin & Media", name: "Drag & Drop Upload", desc: "Kéo thả tệp tin trực tiếp vào khung chat hoặc bất kỳ đâu trong cửa sổ Slack để tải lên.", tier: "Tier 1", priority: "P0" },
+      { stt: "8.2", module: "Tệp tin & Media", name: "Multi-file Upload", desc: "Tải lên nhiều file cùng lúc, gom lại thành một lưới ảnh hoặc danh sách file gọn gàng trong 1 tin nhắn.", tier: "Tier 2", priority: "P1" },
+      { stt: "8.3", module: "Tệp tin & Media", name: "Image Lightbox & Zoom", desc: "Click vào ảnh mở modal toàn màn hình, xem ở độ phân giải gốc, tải xuống hoặc duyệt qua các ảnh khác trong kênh.", tier: "Tier 2", priority: "P1" },
+      { stt: "8.4", module: "Tệp tin & Media", name: "PDF / Document Preview", desc: "Xem trước tài liệu PDF trực tiếp trong ứng dụng mà không cần tải về máy.", tier: "Tier 3", priority: "P2" },
+      { stt: "8.5", module: "Tệp tin & Media", name: "Code Snippet Tool", desc: "Tạo tệp snippet code riêng có syntax highlighting theo ngôn ngữ lập trình, số dòng và cho phép copy.", tier: "Tier 3", priority: "P2" },
+      { stt: "8.6", module: "Tệp tin & Media", name: "Files Browser", desc: "Trang quản lý tập trung tất cả các file đã chia sẻ trong kênh hoặc toàn bộ workspace, lọc theo loại file và người gửi.", tier: "Tier 3", priority: "P2" },
+
+      // Phân hệ IX
+      { stt: "9.1", module: "Audio & Video Huddle", name: "Slack Huddle (Phòng thoại nhanh)", desc: "Công tắc góc dưới bên trái của kênh/DM để bật phòng thoại nhanh; âm thanh êm dịu khi có người tham gia/rời phòng.", tier: "Tier 2", priority: "P1" },
+      { stt: "9.2", module: "Audio & Video Huddle", name: "Huddle Screen Sharing & Co-draw", desc: "Chia sẻ màn hình trong Huddle, cho phép người nghe vẽ trực tiếp (annotation) lên màn hình người chia sẻ.", tier: "Tier 2", priority: "P2" },
+      { stt: "9.3", module: "Audio & Video Huddle", name: "Huddle In-call Chat & Emoji", desc: "Khung chat tạm thời bên trong huddle và thả reaction emoji bay lên màn hình.", tier: "Tier 3", priority: "P2" },
+      { stt: "9.4", module: "Audio & Video Huddle", name: "Audio Clips (Tin nhắn thoại)", desc: "Ghi âm tin nhắn thoại ngắn (voice note) với biểu đồ sóng âm (waveform), có thể nghe lại và tua tốc độ (1x, 1.5x, 2x).", tier: "Tier 3", priority: "P2" },
+      { stt: "9.5", module: "Audio & Video Huddle", name: "Video Clips", desc: "Ghi hình camera hoặc màn hình ngắn gửi trực tiếp vào kênh; tự động tạo phụ đề (transcription).", tier: "Tier 3", priority: "P3" },
+
+      // Phân hệ X
+      { stt: "10.1", module: "Tài liệu & Canvas", name: "Channel Canvas", desc: "Mỗi kênh có 1 trang tài liệu Canvas gắn kèm ở góc trên bên phải để ghi chú quy trình, checklist, links quan trọng.", tier: "Tier 2", priority: "P2" },
+      { stt: "10.2", module: "Tài liệu & Canvas", name: "Standalone Canvas", desc: "Tạo trang tài liệu cá nhân hoặc cộng tác tương tự Notion, nhúng bảng, checklist và mention thành viên.", tier: "Tier 3", priority: "P3" },
+      { stt: "10.3", module: "Tài liệu & Canvas", name: "Slack Lists", desc: "Tính năng quản lý công việc dạng bảng kanban/list đơn giản gắn liền với kênh chat.", tier: "Tier 3", priority: "P3" },
+
+      // Phân hệ XI
+      { stt: "11.1", module: "Bot & Tự động hóa", name: "Slackbot Help & DM", desc: "Kênh DM riêng với Slackbot để nhận thông báo hệ thống, lời chào mừng và lưu nháp ghi chú cá nhân.", tier: "Tier 1", priority: "P1" },
+      { stt: "11.2", module: "Bot & Tự động hóa", name: "Slackbot Auto-responses", desc: "Admin cài đặt từ khóa kích hoạt để Slackbot tự động trả lời (ví dụ: ai hỏi 'wifi password' -> Slackbot tự trả lời password).", tier: "Tier 3", priority: "P2" },
+      { stt: "11.3", module: "Bot & Tự động hóa", name: "Core Slash Commands", desc: "Bộ lệnh gõ tắt kinh điển: /remind, /shrug (¯\_(ツ)_/¯), /mute, /unmute, /away, /collapse, /expand.", tier: "Tier 3", priority: "P1" },
+      { stt: "11.4", module: "Bot & Tự động hóa", name: "Workflow Builder", desc: "Giao diện kéo thả không cần code để tạo luồng tự động: Form xin nghỉ phép, tin nhắn chào mừng, phân luồng ticket.", tier: "Tier 5", priority: "P3" },
+      { stt: "11.5", module: "Bot & Tự động hóa", name: "Interactive Block Kit", desc: "Tin nhắn chứa button, dropdown menu, date picker để người dùng thao tác trực tiếp trên giao diện chat.", tier: "Tier 2", priority: "P1" },
+      { stt: "11.6", module: "Bot & Tự động hóa", name: "Incoming & Outgoing Webhooks", desc: "Nhận payload HTTP POST từ bên ngoài (GitHub, Sentry, Jira) để bắn tin nhắn format đẹp vào kênh.", tier: "Tier 2", priority: "P1" },
+
+      // Phân hệ XII (Slack Magic)
+      { stt: "12.1", module: "Tiểu tiết Slack Magic ✨", name: "Phím Up Arrow để sửa nhanh", desc: "Khi khung soạn thảo đang TRỐNG, ấn mũi tên lên ↑ sẽ tự động chuyển tin nhắn cuối cùng vừa gửi của bạn sang chế độ Edit.", tier: "Tier 4", priority: "P1" },
+      { stt: "12.2", module: "Tiểu tiết Slack Magic ✨", name: "Vạch đỏ New Messages", desc: "Vạch đỏ mỏng ngang kênh ghi 'New Messages' cố định tại vị trí tin nhắn đầu tiên bạn chưa đọc khi mở kênh, không biến mất ngay.", tier: "Tier 4", priority: "P1" },
+      { stt: "12.3", module: "Tiểu tiết Slack Magic ✨", name: "Debounced Typing Indicator", desc: "Hiển thị 'Alex is typing...' mượt mà; nếu 3 người cùng gõ thì hiện 'Alex, Sarah and 1 other are typing...'; tự clear sau 3s.", tier: "Tier 4", priority: "P1" },
+      { stt: "12.4", module: "Tiểu tiết Slack Magic ✨", name: "Mark as Unread (Alt + Click)", desc: "Giữ phím Alt và click vào bất kỳ tin nhắn nào trong lịch sử để đánh dấu kênh chưa đọc bắt đầu từ đúng tin nhắn đó.", tier: "Tier 4", priority: "P2" },
+      { stt: "12.5", module: "Tiểu tiết Slack Magic ✨", name: "Gom nhóm tin nhắn (Grouping)", desc: "Các tin nhắn liên tiếp của cùng 1 người trong vòng 5-10 phút sẽ không lặp lại Avatar và Tên, chỉ hiện timestamp mờ khi hover.", tier: "Tier 4", priority: "P1" },
+      { stt: "12.6", module: "Tiểu tiết Slack Magic ✨", name: "Display Density (Clean/Compact)", desc: "Tùy chọn giao diện: Clean (avatar to, thoáng) hoặc Compact (ẩn avatar, hiển thị dạng dòng chat IRC cùng hàng).", tier: "Tier 4", priority: "P2" },
+      { stt: "12.7", module: "Tiểu tiết Slack Magic ✨", name: "Custom Theme với mã Hex", desc: "Cho phép đổi theme sidebar sang Dark/Light hoặc tự nhập chuỗi mã màu hex tùy chỉnh để chia sẻ màu theme với đồng nghiệp.", tier: "Tier 4", priority: "P3" },
+      { stt: "12.8", module: "Tiểu tiết Slack Magic ✨", name: "Emoji Shortcode Autocomplete", desc: "Gõ :smile hiển thị popup gợi ý emoji kèm phím mũi tên và Enter để chèn nhanh.", tier: "Tier 4", priority: "P2" },
+      { stt: "12.9", module: "Tiểu tiết Slack Magic ✨", name: "Jump to Latest / Unread", desc: "Khi đang scroll xem tin cũ mà có tin mới, xuất hiện thanh thông báo nổi 'More unread messages below ↓' kèm nút nhảy nhanh xuống đáy.", tier: "Tier 4", priority: "P1" },
+      { stt: "12.10", module: "Tiểu tiết Slack Magic ✨", name: "Âm thanh gõ cửa & Easter Eggs", desc: "Âm thanh gõ cửa nhẹ nhàng khi người khác vào huddle; hiệu ứng pháo hoa khi hoàn thành todo list hoặc reaction :tada:.", tier: "Tier 4", priority: "P3" },
+
+      // Phân hệ XIII
+      { stt: "13.1", module: "Quản trị & Bảo mật", name: "Member Management & Invite", desc: "Trang danh sách thành viên: duyệt tài khoản chờ, đổi quyền (Admin, Member, Guest), vô hiệu hóa tài khoản (Deactivate).", tier: "Tier 1", priority: "P0" },
+      { stt: "13.2", module: "Quản trị & Bảo mật", name: "Channel Management Console", desc: "Admin xem được toàn bộ danh sách kênh (kể cả kênh công khai không tham gia), dung lượng chiếm dụng, số thành viên.", tier: "Tier 2", priority: "P1" },
+      { stt: "13.3", module: "Quản trị & Bảo mật", name: "Session & Device Management", desc: "Xem danh sách các thiết bị đang đăng nhập, địa chỉ IP và nút 'Sign out all other sessions'.", tier: "Tier 2", priority: "P1" },
+      { stt: "13.4", module: "Quản trị & Bảo mật", name: "Message Retention Policy", desc: "Cài đặt chính sách lưu trữ: Giữ tin nhắn vĩnh viễn, hoặc tự động xóa tin nhắn cũ hơn 30/90 ngày.", tier: "Tier 5", priority: "P3" },
+      { stt: "13.5", module: "Quản trị & Bảo mật", name: "Data Export (JSON/Zip)", desc: "Xuất toàn bộ dữ liệu lịch sử chat và file đính kèm dưới dạng file nén JSON/zip (phục vụ backup hoặc compliance).", tier: "Tier 5", priority: "P3" },
+      { stt: "13.6", module: "Quản trị & Bảo mật", name: "Audit Logs API", desc: "Ghi nhận chi tiết mọi hoạt động bảo mật (đăng nhập, xóa kênh, đổi quyền, tải file) cho quản trị viên.", tier: "Tier 5", priority: "P3" }
+    ];
+
+    // State
+    const STORAGE_KEY = "slack_feature_benchmark_checklist_v1";
+    let checkedMap = {};
+    try {
+      checkedMap = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch(e) {
+      checkedMap = {};
+    }
+
+    let activeTier = "ALL";
+    let activePriority = "ALL";
+    let activeStatus = "ALL";
+    let activeModule = "ALL";
+    let searchQuery = "";
+    let viewMode = "cards"; // 'cards' | 'table'
+
+    // DOM References
+    const featureGrid = document.getElementById("featureGrid");
+    const featureTable = document.getElementById("featureTable");
+    const featureTableBody = document.getElementById("featureTableBody");
+    const emptyState = document.getElementById("emptyState");
+    const searchInput = document.getElementById("searchInput");
+    const resultsCount = document.getElementById("resultsCount");
+    const statChecked = document.getElementById("statChecked");
+    const statProgress = document.getElementById("statProgress");
+    const statPercent = document.getElementById("statPercent");
+    const moduleNavList = document.getElementById("moduleNavList");
+    const toast = document.getElementById("toastMessage");
+
+    // Init Module Navigation
+    function initModuleNav() {
+      const modules = ["ALL", ...new Set(SLACK_FEATURES.map(f => f.module))];
+      moduleNavList.innerHTML = modules.map(mod => {
+        const count = mod === "ALL" ? SLACK_FEATURES.length : SLACK_FEATURES.filter(f => f.module === mod).length;
+        const name = mod === "ALL" ? "⭐ Tất cả phân hệ" : mod;
+        return `
+          <div class="module-nav-item ${mod === activeModule ? 'active' : ''}" data-mod="${mod}">
+            <span>${name}</span>
+            <span class="mod-count">${count}</span>
+          </div>
+        `;
+      }).join("");
+
+      moduleNavList.querySelectorAll(".module-nav-item").forEach(item => {
+        item.addEventListener("click", () => {
+          activeModule = item.dataset.mod;
+          moduleNavList.querySelectorAll(".module-nav-item").forEach(i => i.classList.remove("active"));
+          item.classList.add("active");
+          render();
+        });
+      });
+    }
+
+    // Filter Logic
+    function getFilteredFeatures() {
+      return SLACK_FEATURES.filter(f => {
+        // Module
+        if (activeModule !== "ALL" && f.module !== activeModule) return false;
+        // Tier
+        if (activeTier !== "ALL" && f.tier !== activeTier) return false;
+        // Priority
+        if (activePriority !== "ALL" && f.priority !== activePriority) return false;
+        // Status
+        const isChecked = !!checkedMap[f.stt];
+        if (activeStatus === "CHECKED" && !isChecked) return false;
+        if (activeStatus === "UNCHECKED" && isChecked) return false;
+        // Search
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const match = f.name.toLowerCase().includes(q) ||
+                        f.desc.toLowerCase().includes(q) ||
+                        f.stt.toLowerCase().includes(q) ||
+                        f.module.toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        return true;
+      });
+    }
+
+    // Render Stats
+    function updateStats() {
+      const total = SLACK_FEATURES.length;
+      const checkedCount = Object.values(checkedMap).filter(Boolean).length;
+      const pct = Math.round((checkedCount / total) * 100);
+
+      statChecked.textContent = `${checkedCount} / ${total}`;
+      statPercent.textContent = `${pct}%`;
+      statProgress.style.width = `${pct}%`;
+    }
+
+    // Toast
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    // Toggle Check
+    function toggleCheck(stt) {
+      checkedMap[stt] = !checkedMap[stt];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedMap));
+      updateStats();
+      render();
+    }
+
+    // Render Function
+    function render() {
+      const filtered = getFilteredFeatures();
+      resultsCount.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        featureGrid.style.display = "none";
+        featureTable.style.display = "none";
+        emptyState.style.display = "block";
+        return;
+      }
+
+      emptyState.style.display = "none";
+
+      if (viewMode === "cards") {
+        featureGrid.style.display = "grid";
+        featureTable.style.display = "none";
+
+        featureGrid.innerHTML = filtered.map(f => {
+          const isChecked = !!checkedMap[f.stt];
+          const tierClass = f.tier.toLowerCase().replace(" ", "");
+          const pClass = f.priority.toLowerCase();
+
+          return `
+            <div class="feature-card ${isChecked ? 'is-checked' : ''} ${f.tier === 'Tier 4' ? 'is-tier4' : ''} ${f.priority === 'P0' ? 'is-p0' : ''}">
+              <div class="card-header">
+                <input type="checkbox" class="feature-checkbox" ${isChecked ? 'checked' : ''} data-stt="${f.stt}">
+                <div class="card-title-wrap">
+                  <div class="feature-stt">STT ${f.stt}</div>
+                  <div class="feature-title">${f.name}</div>
+                </div>
+              </div>
+
+              <div class="card-badges">
+                <span class="badge badge-module">${f.module}</span>
+                <span class="badge badge-${tierClass}">${f.tier}</span>
+                <span class="badge badge-${pClass}">${f.priority}</span>
+              </div>
+
+              <div class="feature-desc">${f.desc}</div>
+            </div>
+          `;
+        }).join("");
+
+        // Attach event listeners to checkboxes
+        featureGrid.querySelectorAll(".feature-checkbox").forEach(cb => {
+          cb.addEventListener("change", (e) => toggleCheck(e.target.dataset.stt));
+        });
+
+      } else {
+        featureGrid.style.display = "none";
+        featureTable.style.display = "block";
+
+        featureTableBody.innerHTML = filtered.map(f => {
+          const isChecked = !!checkedMap[f.stt];
+          const tierClass = f.tier.toLowerCase().replace(" ", "");
+          const pClass = f.priority.toLowerCase();
+
+          return `
+            <tr class="${isChecked ? 'is-checked' : ''}">
+              <td><input type="checkbox" class="feature-checkbox" ${isChecked ? 'checked' : ''} data-stt="${f.stt}"></td>
+              <td style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">${f.stt}</td>
+              <td style="font-weight: 600; color: #FFF;">${f.name}</td>
+              <td><span class="badge badge-module">${f.module}</span></td>
+              <td><span class="badge badge-${tierClass}">${f.tier}</span></td>
+              <td><span class="badge badge-${pClass}">${f.priority}</span></td>
+              <td style="line-height: 1.45;">${f.desc}</td>
+            </tr>
+          `;
+        }).join("");
+
+        featureTableBody.querySelectorAll(".feature-checkbox").forEach(cb => {
+          cb.addEventListener("change", (e) => toggleCheck(e.target.dataset.stt));
+        });
+      }
+    }
+
+    // Setup Filters Listeners
+    document.querySelectorAll(".pill-btn[data-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const filterType = btn.dataset.filter;
+        const val = btn.dataset.val;
+
+        // Deactivate siblings
+        btn.parentElement.querySelectorAll(".pill-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        if (filterType === "tier") activeTier = val;
+        if (filterType === "priority") activePriority = val;
+        if (filterType === "status") activeStatus = val;
+
+        render();
+      });
+    });
+
+    // Search Input
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      render();
+    });
+
+    // Keyboard Shortcuts (Press / to search)
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "/" && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === "Escape" && document.activeElement === searchInput) {
+        searchInput.blur();
+      }
+    });
+
+    // View Toggles
+    const btnViewCards = document.getElementById("btnViewCards");
+    const btnViewTable = document.getElementById("btnViewTable");
+
+    btnViewCards.addEventListener("click", () => {
+      viewMode = "cards";
+      btnViewCards.classList.add("active");
+      btnViewTable.classList.remove("active");
+      render();
+    });
+
+    btnViewTable.addEventListener("click", () => {
+      viewMode = "table";
+      btnViewTable.classList.add("active");
+      btnViewCards.classList.remove("active");
+      render();
+    });
+
+    // Batch Actions
+    document.getElementById("btnToggleAll").addEventListener("click", () => {
+      const filtered = getFilteredFeatures();
+      const allChecked = filtered.every(f => checkedMap[f.stt]);
+      filtered.forEach(f => {
+        checkedMap[f.stt] = !allChecked;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedMap));
+      updateStats();
+      render();
+      showToast(allChecked ? "Đã bỏ chọn các mục hiển thị" : "Đã đánh dấu xong các mục hiển thị");
+    });
+
+    document.getElementById("btnResetAll").addEventListener("click", () => {
+      if (confirm("Bạn có chắc chắn muốn đặt lại (xóa hết) tất cả các đánh dấu đối chiếu?")) {
+        checkedMap = {};
+        localStorage.removeItem(STORAGE_KEY);
+        updateStats();
+        render();
+        showToast("Đã reset toàn bộ tiến độ!");
+      }
+    });
+
+    // Export Report
+    document.getElementById("btnExport").addEventListener("click", () => {
+      const total = SLACK_FEATURES.length;
+      const checkedCount = Object.values(checkedMap).filter(Boolean).length;
+      const pct = Math.round((checkedCount / total) * 100);
+
+      let markdown = `# Báo Cáo Tiến Độ Đối Chiếu Slack Clone\n\n`;
+      markdown += `- **Ngày tạo:** ${new Date().toLocaleDateString('vi-VN')} ${new Date().toLocaleTimeString('vi-VN')}\n`;
+      markdown += `- **Tiến độ tổng thể:** ${checkedCount}/${total} tính năng (${pct}%)\n\n`;
+
+      markdown += `## Chi Tiết Các Tính Năng Đã Hoàn Thành / Đối Chiếu\n\n`;
+      SLACK_FEATURES.forEach(f => {
+        const isChecked = !!checkedMap[f.stt];
+        const status = isChecked ? "[x]" : "[ ]";
+        markdown += `- ${status} **${f.stt}** - ${f.name} (${f.tier} | ${f.priority}) — *${f.module}*\n`;
+      });
+
+      const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `slack-benchmark-report-${new Date().toISOString().slice(0,10)}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Đã xuất file báo cáo Markdown!");
+    });
+
+    // Bootstrap
+    initModuleNav();
+    updateStats();
+    render();
+  </script>
+</body>
+</html>
